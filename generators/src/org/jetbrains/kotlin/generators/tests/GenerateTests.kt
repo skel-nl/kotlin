@@ -161,6 +161,9 @@ import org.jetbrains.kotlin.jvm.runtime.AbstractJvmRuntimeDescriptorLoaderTest
 import org.jetbrains.kotlin.kapt3.test.AbstractClassFileToSourceStubConverterTest
 import org.jetbrains.kotlin.kapt3.test.AbstractKotlinKaptContextTest
 import org.jetbrains.kotlin.kdoc.AbstractKDocLexerTest
+import org.jetbrains.kotlin.checkers.javac.*
+import org.jetbrains.kotlin.jvm.compiler.javac.AbstractLoadJava8UsingJavacTest
+import org.jetbrains.kotlin.jvm.compiler.javac.AbstractLoadJavaUsingJavacTest
 import org.jetbrains.kotlin.modules.xml.AbstractModuleXmlParserTest
 import org.jetbrains.kotlin.multiplatform.AbstractMultiPlatformIntegrationTest
 import org.jetbrains.kotlin.noarg.AbstractBlackBoxCodegenTestForNoArg
@@ -204,7 +207,21 @@ fun main(args: Array<String>) {
             model("codegen/box/diagnostics")
         }
 
+        testClass<AbstractDiagnosticsUsingJavacTest> {
+            model("diagnostics/tests")
+            model("codegen/box/diagnostics")
+        }
+
+        testClass<AbstractJavacDiagnosticsTest> {
+            model("javac/diagnostics/tests")
+            model("javac/diagnostics/tests", testClassName = "TestsWithoutJavac", testMethod = "doTestWithoutJavacWrapper")
+        }
+
         testClass<AbstractDiagnosticsTestWithStdLib> {
+            model("diagnostics/testsWithStdLib")
+        }
+
+        testClass<AbstractDiagnosticsTestWithStdLibUsingJavac> {
             model("diagnostics/testsWithStdLib")
         }
 
@@ -237,6 +254,10 @@ fun main(args: Array<String>) {
         }
 
         testClass<AbstractForeignAnnotationsNoAnnotationInClasspathWithFastClassReadingTest> {
+            model("foreignAnnotations/tests")
+        }
+
+        testClass<AbstractJavacForeignAnnotationsTest> {
             model("foreignAnnotations/tests")
         }
 
@@ -337,6 +358,17 @@ fun main(args: Array<String>) {
         }
 
         testClass<AbstractLoadJavaTest> {
+            model("loadJava/compiledJava", extension = "java", testMethod = "doTestCompiledJava")
+            model("loadJava/compiledJavaAndKotlin", extension = "txt", testMethod = "doTestCompiledJavaAndKotlin")
+            model("loadJava/compiledJavaIncludeObjectMethods", extension = "java", testMethod = "doTestCompiledJavaIncludeObjectMethods")
+            model("loadJava/compiledKotlin", testMethod = "doTestCompiledKotlin")
+            model("loadJava/compiledKotlinWithStdlib", testMethod = "doTestCompiledKotlinWithStdlib")
+            model("loadJava/javaAgainstKotlin", extension = "txt", testMethod = "doTestJavaAgainstKotlin")
+            model("loadJava/kotlinAgainstCompiledJavaWithKotlin", extension = "kt", testMethod = "doTestKotlinAgainstCompiledJavaWithKotlin", recursive = false)
+            model("loadJava/sourceJava", extension = "java", testMethod = "doTestSourceJava")
+        }
+
+        testClass<AbstractLoadJavaUsingJavacTest> {
             model("loadJava/compiledJava", extension = "java", testMethod = "doTestCompiledJava")
             model("loadJava/compiledJavaAndKotlin", extension = "txt", testMethod = "doTestCompiledJavaAndKotlin")
             model("loadJava/compiledJavaIncludeObjectMethods", extension = "java", testMethod = "doTestCompiledJavaIncludeObjectMethods")
@@ -475,7 +507,16 @@ fun main(args: Array<String>) {
             model("foreignAnnotationsJava8/tests")
         }
 
+        testClass<AbstractJavacForeignJava8AnnotationsTest> {
+            model("foreignAnnotationsJava8/tests")
+        }
+
         testClass<AbstractLoadJava8Test> {
+            model("loadJava8/compiledJava", extension = "java", testMethod = "doTestCompiledJava")
+            model("loadJava8/sourceJava", extension = "java", testMethod = "doTestSourceJava")
+        }
+
+        testClass<AbstractLoadJava8UsingJavacTest> {
             model("loadJava8/compiledJava", extension = "java", testMethod = "doTestCompiledJava")
             model("loadJava8/sourceJava", extension = "java", testMethod = "doTestSourceJava")
         }
