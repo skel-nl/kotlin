@@ -208,7 +208,7 @@ class ChangeMemberFunctionSignatureFix private constructor(
             val parameters = newParameters.withIndex().map { (index, parameter) ->
                 ValueParameterDescriptorImpl(
                         descriptor, null, index,
-                        parameter.annotations, parameter.name, parameter.returnType!!, parameter.declaresDefaultValue(),
+                        parameter.annotations, parameter.name, parameter.returnType!!, parameter.declaresDefaultValue(), parameter.isAnnotatedWithDefaultValue(),
                         parameter.isCrossinline, parameter.isNoinline, parameter.isStableName, parameter.varargElementType, SourceElement.NO_SOURCE
                 )
             }
