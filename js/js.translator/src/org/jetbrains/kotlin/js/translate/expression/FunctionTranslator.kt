@@ -103,20 +103,19 @@ fun TranslationContext.wrapWithInlineMetadata(
         function: JsFunction, descriptor: FunctionDescriptor
 ): JsExpression {
     val sourceInfo = descriptor.source.getPsi()
-    return if (descriptor.isInline && descriptor.shouldBeExported(config)) {
-        val metadata = InlineMetadata.compose(function, descriptor, this)
-        metadata.functionWithMetadata(outerContext, sourceInfo)
-    }
-    else {
-        val block = if (descriptor.isInline) {
-            inlineFunctionContext!!.let {
-                JsBlock(it.importBlock.statements + it.prototypeBlock.statements + it.declarationsBlock.statements +
-                        JsReturn(function))
-            }
+    return if (descriptor.isInline) {
+        if (descriptor.shouldBeExported(config)) {
+            val metadata = InlineMetadata.compose(function, descriptor, this)
+            metadata.functionWithMetadata(outerContext, sourceInfo)
         }
         else {
-            null
+            val block = inlineFunctionContext!!.let {
+                JsBlock(it.importBlock.statements + it.prototypeBlock.statements + it.declarationsBlock.statements + JsReturn(function))
+            }
+            InlineMetadata.wrapFunction(outerContext, FunctionWithWrapper(function, block), sourceInfo)
         }
-        if (block != null) InlineMetadata.wrapFunction(outerContext, FunctionWithWrapper(function, block), sourceInfo) else function
+    }
+    else {
+        function
     }
 }
