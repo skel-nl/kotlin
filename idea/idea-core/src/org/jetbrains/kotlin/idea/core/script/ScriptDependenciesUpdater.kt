@@ -220,7 +220,7 @@ internal class ScriptDependenciesUpdater(
     }
 
     fun notifyRootsChanged() {
-        launch(EDT + project) {
+        launch(EDT(project)) {
             runWriteAction {
                 ProjectRootManagerEx.getInstanceEx(project)?.makeRootsChange(EmptyRunnable.getInstance(), false, true)
                 ScriptDependenciesModificationTracker.getInstance(project).incModificationCount()
