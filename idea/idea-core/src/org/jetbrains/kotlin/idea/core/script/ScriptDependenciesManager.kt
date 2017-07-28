@@ -94,7 +94,7 @@ class ScriptDependenciesManager internal constructor(
             with(getInstance(project)) {
                 val scriptDefinition = KotlinScriptDefinitionProvider.getInstance(project)!!.findScriptDefinition(virtualFile)!!
                 if (scriptDefinition.dependencyResolver.shouldUpdateAsynchronously) {
-                    launch(EDT) {
+                    launch(EDT + project) {
                         cacheUpdater.updateAsync(virtualFile, scriptDefinition)!!.join()
                     }
                 }
