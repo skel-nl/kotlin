@@ -54,7 +54,6 @@ internal class ProjectJob(project: Project) {
 
     init {
         Disposer.register(project, Disposable {
-            println("Dispose called")
             sharedJob.cancel()
         })
     }
