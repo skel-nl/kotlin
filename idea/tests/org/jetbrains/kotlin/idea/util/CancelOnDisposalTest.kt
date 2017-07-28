@@ -24,12 +24,7 @@ import org.junit.Assert
 import java.util.concurrent.Executors
 
 class CancelOnDisposalTest : LightCodeInsightFixtureTestCase() {
-    lateinit var latch: Deferred<*>
-    lateinit var proj: Project
-    lateinit var jobs: List<Job>
-    @Volatile
-    var exception: Throwable? = null
-    private val dispatcher = Executors.newFixedThreadPool(1).asCoroutineDispatcher()
+    @Volatile private var exception: Throwable? = null
 
     private val exceptionHandler = CoroutineExceptionHandler { context, e ->
         exception = e.takeIf { it is AssertionError }
@@ -38,38 +33,53 @@ class CancelOnDisposalTest : LightCodeInsightFixtureTestCase() {
     }
 
     fun testCancellation() {
-        Assert.assertTrue(!proj.isDisposed)
-        jobs = (1..10).map {
-            launch(dispatcher + exceptionHandler + proj.cancelOnDisposal) {
-                Assert.assertTrue(!proj.isDisposed)
-                // TODO: while ! tornDown
-                latch.await()
-                Assert.assertTrue(proj.isDisposed)
-                delay(300)
-                // TODO: comment
-                Assert.fail()
+        val project = createProject()
+
+        val dispatcher = Executors.newFixedThreadPool(1).asCoroutineDispatcher()
+
+        val job = launch(dispatcher + exceptionHandler + project.cancelOnDisposal) {
+            Assert.assertTrue(!project.isDisposed)
+            while (!project.isDisposed) {
+                delay(50)
             }
+            Assert.assertTrue(project.isDisposed)
+            delay(100)
+            // coroutine must be canceled at this point
+            Assert.fail()
         }
+
+        Assert.assertTrue(!project.isDisposed)
+        disposeProject(project)
+
+        runBlocking {
+            job.join()
+            delay(50)
+        }
+
+        checkNoExceptionsInBackground()
+    }
+
+    private fun checkNoExceptionsInBackground() {
+        exception?.let { throw AssertionError("Background thread threw an exception.", it) }
+    }
+
+    private fun disposeProject(project: Project) {
+        super.tearDown()
+        Assert.assertTrue(project.isDisposed)
+    }
+
+    private fun createProject(): Project {
+        super.setUp()
+        val project = myFixture.project
+        Assert.assertTrue(!project.isDisposed)
+        return project
     }
 
     override fun setUp() {
-        super.setUp()
-        proj = project
-        Assert.assertTrue(!proj.isDisposed)
-        latch = async(dispatcher) {
-            delay(200)
-        }
+        // do nothing
     }
 
     override fun tearDown() {
-        Assert.assertTrue(!proj.isDisposed)
-        super.tearDown()
-        Assert.assertTrue(proj.isDisposed)
-        runBlocking {
-            jobs.forEach {
-                it.join()
-            }
-        }
-        exception?.let { throw AssertionError("Background thread threw an exception.", it) }
+        // do nothing
     }
 }
