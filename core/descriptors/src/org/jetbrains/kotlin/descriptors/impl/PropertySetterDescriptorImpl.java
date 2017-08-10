@@ -72,7 +72,6 @@ public class PropertySetterDescriptorImpl extends PropertyAccessorDescriptorImpl
                 /* isAnnotatedWithDefaultValue = */ false,
                 /* isCrossinline = */ false,
                 /* isNoinline = */ false,
-                /* isStableName = */ false,
                 null, SourceElement.NO_SOURCE
         );
     }

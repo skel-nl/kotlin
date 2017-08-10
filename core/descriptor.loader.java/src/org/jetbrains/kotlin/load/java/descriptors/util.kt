@@ -51,7 +51,6 @@ fun copyValueParameters(
                 newParameter.isAnnotatedWithDefaultValue,
                 oldParameter.isCrossinline,
                 oldParameter.isNoinline,
-                oldParameter.isStableName,
                 if (oldParameter.varargElementType != null) newOwner.module.builtIns.getArrayElementType(newParameter.type) else null,
                 oldParameter.source
         )

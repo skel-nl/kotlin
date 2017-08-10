@@ -198,7 +198,7 @@ fun <D : FunctionDescriptor> getOrCreateJvmSuspendFunctionView(function: D, bind
             else
                 function.getContinuationParameterTypeOfSuspendFunction(),
             /* declaresDefaultValue = */ false, /* isAnnotatedWithDefaultValue = */ false, /* isCrossinline = */ false,
-            /* isNoinline = */ false, /* isStableName = */ false, /* varargElementType = */ null, SourceElement.NO_SOURCE
+            /* isNoinline = */ false, /* varargElementType = */ null, SourceElement.NO_SOURCE
     )
 
     return function.createCustomCopy {

@@ -512,7 +512,6 @@ class DeepCopyIrTreeWithDescriptors(val targetDescriptor: FunctionDescriptor,
                 isAnnotatedWithDefaultValue = oldDescriptor.isAnnotatedWithDefaultValue(),
                 isCrossinline         = oldDescriptor.isCrossinline,
                 isNoinline            = oldDescriptor.isNoinline,
-                isStableName          = oldDescriptor.isStableName,
                 varargElementType     = substituteType(oldDescriptor.varargElementType),
                 source                = oldDescriptor.source
             )

@@ -209,7 +209,7 @@ class FunctionDescriptorResolver(
                                                       expectedParameterTypes!!.single(), valueParameterDescriptor.declaresDefaultValue(),
                                                       valueParameterDescriptor.isAnnotatedWithDefaultValue(),
                                                       valueParameterDescriptor.isCrossinline, valueParameterDescriptor.isNoinline,
-                                                      valueParameterDescriptor.isStableName, valueParameterDescriptor.varargElementType,
+                                                      valueParameterDescriptor.varargElementType,
                                                       SourceElement.NO_SOURCE)
                 trace.record(BindingContext.AUTO_CREATED_IT, it)
                 return listOf(it)

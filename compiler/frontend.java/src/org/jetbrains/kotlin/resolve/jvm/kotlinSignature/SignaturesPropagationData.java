@@ -22,7 +22,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.builtins.KotlinBuiltIns;
 import org.jetbrains.kotlin.descriptors.*;
-import org.jetbrains.kotlin.descriptors.annotations.Annotations;
+import org.jetbrains.kotlin.descriptors.annotations.*;
 import org.jetbrains.kotlin.descriptors.impl.ValueParameterDescriptorImpl;
 import org.jetbrains.kotlin.incremental.components.NoLookupLocation;
 import org.jetbrains.kotlin.load.java.descriptors.JavaMethodDescriptor;
@@ -69,7 +69,10 @@ public class SignaturesPropagationData {
         superFunctions = getSuperFunctionsForMethod(method, autoMethodDescriptor, containingClass);
         modifiedValueParameters = superFunctions.isEmpty()
                                   ? new ValueParameters(null, autoValueParameters,
-                                                        autoValueParameters.stream().allMatch(ValueParameterDescriptor::isStableName))
+                                                        autoValueParameters.stream().allMatch(
+                                                                it -> DescriptorUtilsKt.getParameterNameAnnotation(it) != null
+                                                        ))
+
                                   : modifyValueParametersAccordingToSuperMethods(autoValueParameters);
     }
 
@@ -150,29 +153,43 @@ public class SignaturesPropagationData {
             }
             else {
                 Name stableName = null;
+                AnnotationDescriptor parentParameterNameAnnotation = null;
                 for (int i = 0; i < superFunctions.size(); i++) {
                     if (superFunctions.get(i).hasStableParameterNames()) {
                         // When there's more than one stable name in super functions, we pick the first one. This behaviour is similar to
                         // the compiler front-end, except that it reports a warning in such cases
                         // TODO: report a warning somewhere if there's more than one stable name in super functions
+                        List<ValueParameterDescriptor> parentParameters = superFunctions.get(i).getValueParameters();
+                        if (originalIndex < parentParameters.size()) {
+                            parentParameterNameAnnotation = DescriptorUtilsKt.getParameterNameAnnotation(parentParameters.get(originalIndex));
+                        }
                         stableName = typesFromSuperMethods.get(i).name;
                         break;
                     }
                 }
 
-                boolean shouldTakeOldName = !originalParam.isStableName() && stableName != null;
+                AnnotationDescriptor currentName = DescriptorUtilsKt.getParameterNameAnnotation(originalParam);
+                boolean shouldTakeOldName = currentName == null && stableName != null;
+
+                Annotations annotations = originalParam.getAnnotations();
+                if (currentName == null && stableName != null && parentParameterNameAnnotation != null) {
+                    List<AnnotationDescriptor> parentAnnotations = new ArrayList<>();
+                    parentAnnotations.add(parentParameterNameAnnotation);
+
+                    annotations = AnnotationsKt.composeAnnotations(annotations, new AnnotationsImpl(parentAnnotations));
+                }
+
                 resultParameters.add(new ValueParameterDescriptorImpl(
                         originalParam.getContainingDeclaration(),
                         null,
                         shouldBeExtension ? originalIndex - 1 : originalIndex,
-                        originalParam.getAnnotations(),
+                        annotations,
                         shouldTakeOldName ? stableName : originalParam.getName(),
                         altType,
                         originalParam.declaresDefaultValue(),
                         originalParam.isAnnotatedWithDefaultValue(),
                         originalParam.isCrossinline(),
                         originalParam.isNoinline(),
-                        originalParam.isStableName() || stableName != null,
                         varargCheckResult.isVararg ? DescriptorUtilsKt.getBuiltIns(originalParam).getArrayElementType(altType) : null,
                         SourceElement.NO_SOURCE
                 ));

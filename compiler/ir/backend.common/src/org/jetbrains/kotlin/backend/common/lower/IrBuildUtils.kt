@@ -138,7 +138,6 @@ private fun BackendContext.createPropertySetterBuilder(startOffset: Int, endOffs
                     isAnnotatedWithDefaultValue = false,
                     isCrossinline         = false,
                     isNoinline            = false,
-                    isStableName          = false,
                     varargElementType     = null,
                     source                = SourceElement.NO_SOURCE
             )

@@ -213,7 +213,6 @@ abstract class LazyJavaScope(protected val c: LazyJavaResolverContext) : MemberS
                     /* isAnnotatedWithDefaultValue = */ false,
                     /* isCrossinline = */ false,
                     /* isNoinline = */ false,
-                    parameterName?.isNotEmpty() == true,
                     varargElementType,
                     c.components.sourceElementFactory.source(javaParameter)
             )

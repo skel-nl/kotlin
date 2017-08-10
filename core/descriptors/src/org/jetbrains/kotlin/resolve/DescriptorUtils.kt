@@ -44,6 +44,8 @@ import org.jetbrains.kotlin.utils.DFS
 import org.jetbrains.kotlin.utils.SmartList
 import org.jetbrains.kotlin.utils.addToStdlib.safeAs
 
+private val PARAMETER_NAME_FQ_NAME = FqName("kotlin.internal.ParameterName")
+
 private val DEFAULT_VALUE_FQ_NAME = FqName("kotlin.internal.DefaultValue")
 private val DEFAULT_NULL_FQ_NAME = FqName("kotlin.internal.DefaultNull")
 
@@ -205,6 +207,15 @@ fun ValueParameterDescriptor.hasDefaultValue(): Boolean {
             },
             ValueParameterDescriptor::declaresDefaultValue
     )
+}
+
+fun ValueParameterDescriptor.getParameterNameAnnotation(): AnnotationDescriptor? {
+    val annotation = annotations.findAnnotation(PARAMETER_NAME_FQ_NAME) ?: return null
+    if (annotation.firstArgumentValue()?.safeAs<String>()?.isEmpty() != false) {
+        return null
+    }
+
+    return annotation
 }
 
 fun ValueParameterDescriptor.getDefaultValueFromAnnotation(): AnnotationDefaultValue? {

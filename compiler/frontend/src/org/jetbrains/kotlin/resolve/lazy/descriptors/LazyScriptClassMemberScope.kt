@@ -56,7 +56,6 @@ class LazyScriptClassMemberScope(
                     /* isAnnotatedWithDefaultValue = */ false,
                     /* isCrossinline = */ false,
                     /* isNoinline = */ false,
-                    /* isStableName = */ false,
                     null, SourceElement.NO_SOURCE
             )
         }

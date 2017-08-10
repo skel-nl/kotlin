@@ -115,7 +115,7 @@ class IrBuiltIns(val builtIns: KotlinBuiltIns) {
 
                 val valueParameterName = ValueParameterDescriptorImpl(
                         this, null, 0, Annotations.EMPTY, Name.identifier("name"), builtIns.stringType,
-                        false, false, false, false, false,
+                        false, false, false, false,
                         null, SourceElement.NO_SOURCE
                 )
 

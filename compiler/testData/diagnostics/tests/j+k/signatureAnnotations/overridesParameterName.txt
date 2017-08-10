@@ -4,7 +4,7 @@ public fun main(): kotlin.Unit
 
 public/*package*/ open class A {
     public/*package*/ constructor A()
-    public open fun call(/*0*/ @kotlin.internal.ParameterName(name = "foo") /*stablename*/ foo: kotlin.String!): kotlin.Unit
+    public open fun call(/*0*/ @kotlin.internal.ParameterName(name = "foo") foo: kotlin.String!): kotlin.Unit
     public open override /*1*/ /*fake_override*/ fun equals(/*0*/ other: kotlin.Any?): kotlin.Boolean
     public open override /*1*/ /*fake_override*/ fun hashCode(): kotlin.Int
     public open override /*1*/ /*fake_override*/ fun toString(): kotlin.String
@@ -12,7 +12,7 @@ public/*package*/ open class A {
 
 public/*package*/ open class B : A {
     public/*package*/ constructor B()
-    public open override /*1*/ fun call(/*0*/ @kotlin.internal.ParameterName(name = "bar") /*stablename*/ bar: kotlin.String!): kotlin.Unit
+    public open override /*1*/ fun call(/*0*/ @kotlin.internal.ParameterName(name = "bar") bar: kotlin.String!): kotlin.Unit
     public open override /*1*/ /*fake_override*/ fun equals(/*0*/ other: kotlin.Any?): kotlin.Boolean
     public open override /*1*/ /*fake_override*/ fun hashCode(): kotlin.Int
     public open override /*1*/ /*fake_override*/ fun toString(): kotlin.String
@@ -20,7 +20,7 @@ public/*package*/ open class B : A {
 
 public/*package*/ open class C : A {
     public/*package*/ constructor C()
-    public open override /*1*/ fun call(/*0*/ /*stablename*/ foo: kotlin.String!): kotlin.Unit
+    public open override /*1*/ fun call(/*0*/ @kotlin.internal.ParameterName(name = "foo") foo: kotlin.String!): kotlin.Unit
     public open override /*1*/ /*fake_override*/ fun equals(/*0*/ other: kotlin.Any?): kotlin.Boolean
     public open override /*1*/ /*fake_override*/ fun hashCode(): kotlin.Int
     public open override /*1*/ /*fake_override*/ fun toString(): kotlin.String
@@ -36,7 +36,7 @@ public open class D {
 
 public/*package*/ open class E : D {
     public/*package*/ constructor E()
-    public open override /*1*/ fun call(/*0*/ @kotlin.internal.ParameterName(name = "baz") /*stablename*/ baz: kotlin.String): kotlin.Unit
+    public open override /*1*/ fun call(/*0*/ @kotlin.internal.ParameterName(name = "baz") baz: kotlin.String): kotlin.Unit
     public open override /*1*/ /*fake_override*/ fun equals(/*0*/ other: kotlin.Any?): kotlin.Boolean
     public open override /*1*/ /*fake_override*/ fun hashCode(): kotlin.Int
     public open override /*1*/ /*fake_override*/ fun toString(): kotlin.String
@@ -44,7 +44,7 @@ public/*package*/ open class E : D {
 
 public/*package*/ open class F : D {
     public/*package*/ constructor F()
-    public open override /*1*/ fun call(/*0*/ /*stablename*/ foo: kotlin.String): kotlin.Unit
+    public open override /*1*/ fun call(/*0*/ foo: kotlin.String): kotlin.Unit
     public open override /*1*/ /*fake_override*/ fun equals(/*0*/ other: kotlin.Any?): kotlin.Boolean
     public open override /*1*/ /*fake_override*/ fun hashCode(): kotlin.Int
     public open override /*1*/ /*fake_override*/ fun toString(): kotlin.String
@@ -53,7 +53,7 @@ public/*package*/ open class F : D {
 public/*package*/ open class G {
     public/*package*/ constructor G()
     public open override /*1*/ /*fake_override*/ fun equals(/*0*/ other: kotlin.Any?): kotlin.Boolean
-    public open fun foo(/*0*/ bar: kotlin.String!, /*1*/ @kotlin.internal.ParameterName(name = "foo") /*stablename*/ foo: kotlin.String!): kotlin.Unit
+    public open fun foo(/*0*/ bar: kotlin.String!, /*1*/ @kotlin.internal.ParameterName(name = "foo") foo: kotlin.String!): kotlin.Unit
     public open override /*1*/ /*fake_override*/ fun hashCode(): kotlin.Int
     public open override /*1*/ /*fake_override*/ fun toString(): kotlin.String
 }
