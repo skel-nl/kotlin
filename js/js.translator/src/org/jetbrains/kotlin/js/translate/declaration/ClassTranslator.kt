@@ -25,6 +25,7 @@ import org.jetbrains.kotlin.js.translate.callTranslator.CallTranslator
 import org.jetbrains.kotlin.js.translate.context.*
 import org.jetbrains.kotlin.js.translate.expression.translateAndAliasParameters
 import org.jetbrains.kotlin.js.translate.expression.translateFunction
+import org.jetbrains.kotlin.js.translate.extensions.JsSyntheticTranslateExtension
 import org.jetbrains.kotlin.js.translate.general.AbstractTranslator
 import org.jetbrains.kotlin.js.translate.initializer.ClassInitializerTranslator
 import org.jetbrains.kotlin.js.translate.reference.ReferenceTranslator
@@ -117,9 +118,16 @@ class ClassTranslator private constructor(
             generateEnumStandardMethods(bodyVisitor.enumEntries)
         }
 
+        generateClassSyntheticParts(context)
+
         // We don't use generated name. However, by generating the name, we generate corresponding entry in inter-fragment import table.
         // This is required to properly merge fragments when one contains super-class and another contains derived class.
         descriptor.getSuperClassNotAny()?.let { ReferenceTranslator.translateAsTypeReference(it, context) }
+    }
+
+    private fun generateClassSyntheticParts(context: TranslationContext) {
+        val ext = JsSyntheticTranslateExtension.getInstances(context.config.project)
+        ext.forEach { it.generateClassSyntheticParts(descriptor, this, context) }
     }
 
     private fun TranslationContext.withUsageTrackerIfNecessary(innerDescriptor: MemberDescriptor): TranslationContext {
