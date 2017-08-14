@@ -55,6 +55,16 @@ class DeclarationBodyVisitor(
         }
     }
 
+    fun generateClassOrObject(classOrObject: KtPureClassOrObject, context: TranslationContext, needCompanionInitializer: Boolean = false) {
+        ClassTranslator.translate(classOrObject, context)
+        val descriptor = BindingUtils.getClassDescriptor(context.bindingContext(), classOrObject)
+        context.export(descriptor)
+        if (needCompanionInitializer) {
+            addInitializerStatement(JsInvocation(context.getNameForObjectInstance(descriptor).makeRef())
+                                            .source(classOrObject).makeStmt())
+        }
+    }
+
     override fun visitEnumEntry(enumEntry: KtEnumEntry, context: TranslationContext) {
         val enumInitializer = this.enumInitializer!!
         val descriptor = getClassDescriptor(context.bindingContext(), enumEntry)
