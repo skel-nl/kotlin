@@ -103,6 +103,7 @@ class ClassTranslator private constructor(
                 .getContributedDescriptors(DescriptorKindFilter.CLASSIFIERS, MemberScope.ALL_NAME_FILTER)
                 .asSequence()
                 .filterIsInstance<SyntheticClassOrObjectDescriptor>()
+                .filter { it != companionDescriptor }
                 .forEach { bodyVisitor.generateClassOrObject(it.syntheticDeclaration, nonConstructorContext, false) }
 
         mayBeAddThrowableProperties(context)
@@ -147,7 +148,7 @@ class ClassTranslator private constructor(
 
     private fun generateClassSyntheticParts(context: TranslationContext) {
         val ext = JsSyntheticTranslateExtension.getInstances(context.config.project)
-        ext.forEach { it.generateClassSyntheticParts(descriptor, this, context) }
+        ext.forEach { it.generateClassSyntheticParts(classDeclaration, descriptor, this, context) }
     }
 
     private fun TranslationContext.withUsageTrackerIfNecessary(innerDescriptor: MemberDescriptor): TranslationContext {

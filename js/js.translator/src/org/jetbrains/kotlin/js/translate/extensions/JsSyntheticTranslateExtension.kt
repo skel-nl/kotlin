@@ -20,6 +20,7 @@ import org.jetbrains.kotlin.descriptors.ClassDescriptor
 import org.jetbrains.kotlin.extensions.ProjectExtensionDescriptor
 import org.jetbrains.kotlin.js.translate.context.TranslationContext
 import org.jetbrains.kotlin.js.translate.declaration.ClassTranslator
+import org.jetbrains.kotlin.psi.KtPureClassOrObject
 
 /**
  *  @author Leonid Startsev
@@ -30,5 +31,5 @@ interface JsSyntheticTranslateExtension {
     companion object : ProjectExtensionDescriptor<JsSyntheticTranslateExtension>(
             "org.jetbrains.kotlin.jsSyntheticTranslateExtension", JsSyntheticTranslateExtension::class.java)
 
-    fun generateClassSyntheticParts(descriptor: ClassDescriptor, translator: ClassTranslator, context: TranslationContext)
+    fun generateClassSyntheticParts(declaration: KtPureClassOrObject, descriptor: ClassDescriptor, translator: ClassTranslator, context: TranslationContext)
 }
