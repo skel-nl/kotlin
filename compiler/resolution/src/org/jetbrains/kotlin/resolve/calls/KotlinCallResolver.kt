@@ -59,7 +59,7 @@ class KotlinCallResolver(
             return kotlinCallCompleter.createAllCandidatesResult(allCandidates, expectedType, resolutionCallbacks)
         }
 
-        val candidates = towerResolver.runResolve(scopeTower, processor, useOrder = kotlinCall.callKind != KotlinCallKind.UNSUPPORTED)
+        val candidates = towerResolver.runResolve(scopeTower, processor, useOrder = kotlinCall.callKind != KotlinCallKind.UNSUPPORTED, name = kotlinCall.name)
 
         return choseMostSpecific(candidateFactory, resolutionCallbacks, expectedType, candidates)
     }
