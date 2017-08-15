@@ -22,11 +22,6 @@ import org.jetbrains.kotlin.js.translate.context.TranslationContext
 import org.jetbrains.kotlin.js.translate.declaration.DeclarationBodyVisitor
 import org.jetbrains.kotlin.psi.KtPureClassOrObject
 
-/**
- *  @author Leonid Startsev
- *          sandwwraith@gmail.com
- */
-
 interface JsSyntheticTranslateExtension {
     companion object : ProjectExtensionDescriptor<JsSyntheticTranslateExtension>(
             "org.jetbrains.kotlin.jsSyntheticTranslateExtension", JsSyntheticTranslateExtension::class.java)
