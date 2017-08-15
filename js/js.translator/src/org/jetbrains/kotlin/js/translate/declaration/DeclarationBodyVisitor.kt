@@ -105,11 +105,12 @@ class DeclarationBodyVisitor(
 
     override fun visitSecondaryConstructor(constructor: KtSecondaryConstructor, data: TranslationContext) { }
 
-    private fun addInitializerStatement(statement: JsStatement) {
+    // public api for extensions
+    fun addInitializerStatement(statement: JsStatement) {
         initializerStatements.add(statement)
     }
 
-    override fun addFunction(descriptor: FunctionDescriptor, expression: JsExpression?, psi: KtElement) {
+    override fun addFunction(descriptor: FunctionDescriptor, expression: JsExpression?, psi: KtElement?) {
         if (!descriptor.hasOrInheritsParametersWithDefaultValue() || !descriptor.isOverridableOrOverrides) {
             if (expression != null) {
                 context.addDeclarationStatement(context.addFunctionToPrototype(containingClass, descriptor, expression))
@@ -126,7 +127,7 @@ class DeclarationBodyVisitor(
 
             if (descriptor.hasOwnParametersWithDefaultValue()) {
                 val caller = JsFunction(context.getScopeForDescriptor(containingClass), JsBlock(), "")
-                caller.source = psi.finalElement
+                caller.source = psi?.finalElement
                 val callerContext = context
                         .newDeclaration(descriptor)
                         .translateAndAliasParameters(descriptor, caller.parameters)

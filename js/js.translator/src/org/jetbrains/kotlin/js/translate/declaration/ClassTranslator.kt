@@ -106,6 +106,9 @@ class ClassTranslator private constructor(
                 .filter { it != companionDescriptor }
                 .forEach { bodyVisitor.generateClassOrObject(it.syntheticDeclaration, nonConstructorContext, false) }
 
+        // other synthetic initializers, properties and functions
+        generateClassSyntheticParts(nonConstructorContext, bodyVisitor)
+
         mayBeAddThrowableProperties(context)
         constructorFunction.body.statements += bodyVisitor.initializerStatements
         delegationTranslator.generateDelegated()
@@ -139,16 +142,14 @@ class ClassTranslator private constructor(
             generateEnumStandardMethods(bodyVisitor.enumEntries)
         }
 
-        generateClassSyntheticParts(nonConstructorContext)
-
         // We don't use generated name. However, by generating the name, we generate corresponding entry in inter-fragment import table.
         // This is required to properly merge fragments when one contains super-class and another contains derived class.
         descriptor.getSuperClassNotAny()?.let { ReferenceTranslator.translateAsTypeReference(it, context) }
     }
 
-    private fun generateClassSyntheticParts(context: TranslationContext) {
+    private fun generateClassSyntheticParts(context: TranslationContext, declarationVisitor: DeclarationBodyVisitor) {
         val ext = JsSyntheticTranslateExtension.getInstances(context.config.project)
-        ext.forEach { it.generateClassSyntheticParts(classDeclaration, descriptor, this, context) }
+        ext.forEach { it.generateClassSyntheticParts(classDeclaration, descriptor, declarationVisitor, context) }
     }
 
     private fun TranslationContext.withUsageTrackerIfNecessary(innerDescriptor: MemberDescriptor): TranslationContext {
