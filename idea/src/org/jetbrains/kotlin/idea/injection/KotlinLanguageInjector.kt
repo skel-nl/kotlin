@@ -25,6 +25,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.psi.*
 import com.intellij.psi.impl.source.tree.injected.InjectedLanguageUtil
+import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.LocalSearchScope
 import com.intellij.psi.search.searches.ReferencesSearch
 import com.intellij.psi.util.PsiTreeUtil
@@ -35,6 +36,7 @@ import org.intellij.plugins.intelliLang.inject.TemporaryPlacesRegistry
 import org.intellij.plugins.intelliLang.inject.config.BaseInjection
 import org.intellij.plugins.intelliLang.inject.java.JavaLanguageInjectionSupport
 import org.intellij.plugins.intelliLang.util.AnnotationUtilEx
+import org.jetbrains.kotlin.descriptors.ClassConstructorDescriptor
 import org.jetbrains.kotlin.descriptors.FunctionDescriptor
 import org.jetbrains.kotlin.idea.caches.resolve.analyze
 import org.jetbrains.kotlin.idea.references.KtReference
@@ -43,6 +45,8 @@ import org.jetbrains.kotlin.idea.util.ProjectRootsUtil
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.resolve.annotations.argumentValue
+import org.jetbrains.kotlin.resolve.calls.callUtil.getResolvedCall
+import org.jetbrains.kotlin.resolve.descriptorUtil.fqNameSafe
 import org.jetbrains.kotlin.resolve.lazy.BodyResolveMode
 import java.util.*
 import kotlin.collections.ArrayList
@@ -139,6 +143,7 @@ class KotlinLanguageInjector(
     private fun findInjectionInfo(place: KtElement, originalHost: Boolean = true): InjectionInfo? {
         return injectWithExplicitCodeInstruction(place)
                ?: injectWithCall(place)
+               ?: injectInAnnotationCall(place)
                ?: injectWithReceiver(place)
                ?: injectWithVariableUsage(place, originalHost)
     }
@@ -245,6 +250,18 @@ class KotlinLanguageInjector(
         }
 
         return null
+    }
+
+    private fun injectInAnnotationCall(host: KtElement): InjectionInfo? {
+        val argument = host.parent as? KtValueArgument ?: return null
+        val annotationEntry = PsiTreeUtil.getParentOfType(host, KtAnnotationEntry::class.java) ?: return null
+        val fqName = (annotationEntry.getResolvedCall(annotationEntry.analyze())?.candidateDescriptor as? ClassConstructorDescriptor)
+                             ?.containingDeclaration?.fqNameSafe?.toString() ?: return null
+        val psiClass =
+                JavaPsiFacade.getInstance(host.project).findClass(fqName, GlobalSearchScope.allScope(host.project)) ?: return null
+        val argumentName = argument.getArgumentName()?.asName?.identifier ?: "value"
+        val method = psiClass.findMethodsByName(argumentName, false).single()
+        return findInjection(method, Configuration.getInstance().getInjections(JavaLanguageInjectionSupport.JAVA_SUPPORT_ID))
     }
 
     private fun injectionForJavaMethod(argument: KtValueArgument, javaMethod: PsiMethod): InjectionInfo? {
