@@ -22,14 +22,16 @@ import com.intellij.openapi.roots.impl.PackageDirectoryCache
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.NonClasspathClassFinder
 import com.intellij.psi.PsiClass
+import com.intellij.psi.impl.java.stubs.index.JavaFullClassNameIndex
 import com.intellij.psi.search.EverythingGlobalScope
 import com.intellij.psi.search.GlobalSearchScope
+import com.intellij.psi.stubs.StubIndex
 import com.intellij.util.containers.ConcurrentFactoryMap
 import org.jetbrains.kotlin.idea.caches.resolve.ScriptModuleSearchScope
 import org.jetbrains.kotlin.load.java.AbstractJavaClassFinder
 import org.jetbrains.kotlin.resolve.jvm.KotlinSafeClassFinder
 
-class KotlinScriptDependenciesClassFinder(project: Project,
+class KotlinScriptDependenciesClassFinder(private val project: Project,
                                           private val scriptDependenciesManager: ScriptDependenciesManager
 ) : NonClasspathClassFinder(project), KotlinSafeClassFinder {
 
@@ -56,21 +58,28 @@ class KotlinScriptDependenciesClassFinder(project: Project,
         myCaches.clear()
     }
 
-    override fun findClass(qualifiedName: String, scope: GlobalSearchScope): PsiClass? =
-        super.findClass(qualifiedName, scope)?.let { aClass ->
-            when {
-                scope is ScriptModuleSearchScope ||
-                (scope as? AbstractJavaClassFinder.FilterOutKotlinSourceFilesScope)?.base is ScriptModuleSearchScope ||
-                scope is EverythingGlobalScope ||
-                aClass.containingFile?.virtualFile.let { file ->
-                    file != null &&
-                    with (ProjectFileIndex.SERVICE.getInstance(myProject)) {
-                        !isInContent(file) &&
-                        !isInLibraryClasses(file) &&
-                        !isInLibrarySource(file)
-                    }
-                } -> aClass
-                else -> null
-            }
+    override fun findClass(qualifiedName: String, scope: GlobalSearchScope): PsiClass? {
+        val psiClass = findClassInIndex(qualifiedName, scope) ?: return null
+        return when {
+            scope is ScriptModuleSearchScope ||
+            (scope as? AbstractJavaClassFinder.FilterOutKotlinSourceFilesScope)?.base is ScriptModuleSearchScope ||
+            scope is EverythingGlobalScope ||
+            psiClass.containingFile?.virtualFile.let { file ->
+                file != null &&
+                with(ProjectFileIndex.SERVICE.getInstance(myProject)) {
+                    !isInContent(file) &&
+                    !isInLibraryClasses(file) &&
+                    !isInLibrarySource(file)
+                }
+            } -> psiClass
+            else -> null
         }
+    }
+
+    private fun findClassInIndex(qualifiedName: String, scope: GlobalSearchScope): PsiClass? {
+        return StubIndex.getElements(
+                JavaFullClassNameIndex.getInstance().key, qualifiedName.hashCode(), project, scope, PsiClass::class.java
+        ).find { it.qualifiedName == qualifiedName }
+
+    }
 }
