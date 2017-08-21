@@ -2352,10 +2352,13 @@ public class ExpressionCodegen extends KtVisitor<StackValue, StackValue> impleme
         if (!isInline) return defaultCallGenerator;
 
         FunctionDescriptor original =
-                CoroutineCodegenUtilKt.getOriginalSuspendFunctionView(
-                        unwrapInitialSignatureDescriptor(DescriptorUtils.unwrapFakeOverride((FunctionDescriptor) descriptor.getOriginal())),
+                unwrapInitialSignatureDescriptor(DescriptorUtils.unwrapFakeOverride((FunctionDescriptor) descriptor.getOriginal()));
+
+        CoroutineCodegenUtilKt.getOriginalSuspendFunctionView(
+                        original,
                         bindingContext
-                );
+        );
+
         if (isDefaultCompilation) {
             return new InlineCodegenForDefaultBody(original, this, state, new PsiSourceCompilerForInline(this, callElement));
         }
