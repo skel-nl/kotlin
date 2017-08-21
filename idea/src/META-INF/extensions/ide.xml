@@ -13,6 +13,9 @@
 
         <extensionPoint name="idePlatformSupport"
                         interface="org.jetbrains.kotlin.caches.resolve.IdePlatformSupport"/>
+
+        <extensionPoint name="ideLightClassExtension"
+                        interface="org.jetbrains.kotlin.idea.caches.resolve.lightClasses.IDELightClassExtension"/>
     </extensionPoints>
 
     <extensions defaultExtensionNs="org.jetbrains.kotlin">
