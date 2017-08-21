@@ -36,12 +36,12 @@ import org.intellij.plugins.intelliLang.inject.TemporaryPlacesRegistry
 import org.intellij.plugins.intelliLang.inject.config.BaseInjection
 import org.intellij.plugins.intelliLang.inject.java.JavaLanguageInjectionSupport
 import org.intellij.plugins.intelliLang.util.AnnotationUtilEx
-import org.jetbrains.kotlin.descriptors.ClassConstructorDescriptor
 import org.jetbrains.kotlin.descriptors.FunctionDescriptor
 import org.jetbrains.kotlin.idea.caches.resolve.analyze
 import org.jetbrains.kotlin.idea.references.KtReference
 import org.jetbrains.kotlin.idea.runInReadActionWithWriteActionPriorityWithPCE
 import org.jetbrains.kotlin.idea.util.ProjectRootsUtil
+import org.jetbrains.kotlin.load.java.descriptors.JavaClassConstructorDescriptor
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.resolve.annotations.argumentValue
@@ -254,13 +254,14 @@ class KotlinLanguageInjector(
 
     private fun injectInAnnotationCall(host: KtElement): InjectionInfo? {
         val argument = host.parent as? KtValueArgument ?: return null
-        val annotationEntry = PsiTreeUtil.getParentOfType(host, KtAnnotationEntry::class.java) ?: return null
-        val fqName = (annotationEntry.getResolvedCall(annotationEntry.analyze())?.candidateDescriptor as? ClassConstructorDescriptor)
+        val annotationEntry = argument.parent.parent as? KtAnnotationEntry ?: return null
+        val callDescriptor = annotationEntry.getResolvedCall(annotationEntry.analyze())?.candidateDescriptor
+        val fqName = (callDescriptor as? JavaClassConstructorDescriptor) //Expects Java constructor here, Kotlin annotations requires another handling and not yet implemented
                              ?.containingDeclaration?.fqNameSafe?.toString() ?: return null
         val psiClass =
                 JavaPsiFacade.getInstance(host.project).findClass(fqName, GlobalSearchScope.allScope(host.project)) ?: return null
         val argumentName = argument.getArgumentName()?.asName?.identifier ?: "value"
-        val method = psiClass.findMethodsByName(argumentName, false).single()
+        val method = psiClass.findMethodsByName(argumentName, false).singleOrNull() ?: return null
         return findInjection(method, Configuration.getInstance().getInjections(JavaLanguageInjectionSupport.JAVA_SUPPORT_ID))
     }
 
