@@ -68,7 +68,7 @@ abstract class ArgumentGenerator {
                     generateExpression(declIndex, argument)
                 }
                 is DefaultValueArgument -> {
-                    if (calleeDescriptor?.defaultValueFromJava() == true) {
+                    if (calleeDescriptor?.defaultValueFromJava(declIndex) == true) {
                         generateDefaultJava(declIndex, argument)
                     }
                     else {
@@ -115,12 +115,12 @@ abstract class ArgumentGenerator {
     }
 }
 
-private fun CallableDescriptor.defaultValueFromJava(): Boolean = DFS.ifAny(
+private fun CallableDescriptor.defaultValueFromJava(startsFrom: Int): Boolean = DFS.ifAny(
         listOf(this),
         { current -> current.overriddenDescriptors.map { it.original } },
         { descriptor ->
             descriptor.overriddenDescriptors.isEmpty() &&
             descriptor is JavaCallableMemberDescriptor &&
-            descriptor.valueParameters.all { it.declaresDefaultValue() }
+            descriptor.valueParameters.drop(startsFrom).all { it.declaresDefaultValue() }
         }
 )
