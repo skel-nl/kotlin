@@ -67,7 +67,7 @@ class ClassifierResolver(private val javac: JavacWrapper) {
     private fun pathSegments(path: String): List<String> {
         val pathSegments = arrayListOf<String>()
         var numberOfBrackets = 0
-        var builder = StringBuilder()
+        val builder = StringBuilder()
         path.forEach { char ->
             when (char) {
                 '<' -> numberOfBrackets++
@@ -75,7 +75,7 @@ class ClassifierResolver(private val javac: JavacWrapper) {
                 '.' -> {
                     if (numberOfBrackets == 0) {
                         pathSegments.add(builder.toString())
-                        builder = StringBuilder()
+                        builder.setLength(0)
                     }
                 }
                 '@' -> {}
@@ -91,8 +91,10 @@ class ClassifierResolver(private val javac: JavacWrapper) {
         val containingClass = when (containingElement) {
             is JavaClass -> containingElement
             is JavaTypeParameterListOwner -> {
-                val identifier = Name.identifier(pathSegments.first())
-                containingElement.typeParameters.find { it.name == identifier }?.let { return it }
+                pathSegments.singleOrNull()?.let { pathSegment ->
+                    val identifier = Name.identifier(pathSegment)
+                    containingElement.typeParameters.find { it.name == identifier }?.let { return it }
+                }
                 (containingElement as JavaMember).containingClass
             }
             is JavaPackage -> return SingleTypeImportScope(javac, unit).findClass(pathSegments.first(), pathSegments)
