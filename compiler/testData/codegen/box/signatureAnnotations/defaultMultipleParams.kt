@@ -8,6 +8,10 @@ class A {
     public int first(@DefaultValue(value = "1") int a, @DefaultValue(value = "2") int b) {
         return 100 * a + b;
     }
+
+    public int second(int a, @DefaultValue(value = "42") int b) {
+        return 100 * a + b;
+    }
 }
 
 // FILE: main.kt
@@ -24,6 +28,14 @@ fun box(): String {
 
     if (a.first(3, 4) != 304)  {
         return "FAIL 3"
+    }
+
+    if (a.second(7, 8) != 708) {
+        return "FAIL 4"
+    }
+
+    if (a.second(1) != 142) {
+        return "FAIL 5"
     }
 
     return "OK"
