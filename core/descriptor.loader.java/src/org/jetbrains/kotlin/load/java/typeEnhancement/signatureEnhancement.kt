@@ -16,13 +16,11 @@
 
 package org.jetbrains.kotlin.load.java.typeEnhancement
 
-import org.jetbrains.kotlin.builtins.KotlinBuiltIns
 import org.jetbrains.kotlin.descriptors.*
 import org.jetbrains.kotlin.descriptors.annotations.Annotated
 import org.jetbrains.kotlin.descriptors.annotations.AnnotationDescriptor
 import org.jetbrains.kotlin.descriptors.annotations.Annotations
 import org.jetbrains.kotlin.descriptors.annotations.composeAnnotations
-import org.jetbrains.kotlin.incremental.components.NoLookupLocation
 import org.jetbrains.kotlin.load.java.*
 import org.jetbrains.kotlin.load.java.descriptors.*
 import org.jetbrains.kotlin.load.java.lazy.LazyJavaResolverContext
@@ -31,7 +29,6 @@ import org.jetbrains.kotlin.load.java.lazy.descriptors.isJavaField
 import org.jetbrains.kotlin.load.kotlin.SignatureBuildingComponents
 import org.jetbrains.kotlin.load.kotlin.computeJvmDescriptor
 import org.jetbrains.kotlin.name.FqName
-import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.platform.JavaToKotlinClassMap
 import org.jetbrains.kotlin.resolve.descriptorUtil.firstArgumentValue
 import org.jetbrains.kotlin.types.*
@@ -40,10 +37,8 @@ import org.jetbrains.kotlin.types.TypeUtils
 import org.jetbrains.kotlin.types.asFlexibleType
 import org.jetbrains.kotlin.types.checker.KotlinTypeChecker
 import org.jetbrains.kotlin.types.typeUtil.isTypeParameter
-import org.jetbrains.kotlin.types.typeUtil.makeNotNullable
 import org.jetbrains.kotlin.utils.addToStdlib.firstNotNullResult
 import org.jetbrains.kotlin.utils.addToStdlib.safeAs
-import org.jetbrains.kotlin.utils.extractRadix
 
 data class NullabilityQualifierWithMigrationStatus(
         val qualifier: NullabilityQualifier,
@@ -181,7 +176,7 @@ class SignatureEnhancement(private val annotationTypeQualifierResolver: Annotati
         val defaultValue = getDefaultValueFromAnnotation()
 
         return when (defaultValue) {
-                is StringDefaultValue -> type.checkLexicalCastFrom(defaultValue.value)
+                is StringDefaultValue -> type.lexicalCastFrom(defaultValue.value) != null
                 NullDefaultValue -> TypeUtils.acceptsNullable(type)
                 null -> declaresDefaultValue()
         } && overriddenDescriptors.isEmpty()
@@ -397,37 +392,5 @@ class SignatureEnhancement(private val annotationTypeQualifierResolver: Annotati
                 isCovariant,
                 defaultTopLevelQualifiers
         )
-    }
-
-    private fun KotlinType.checkLexicalCastFrom(value: String): Boolean {
-        val typeDescriptor = constructor.declarationDescriptor
-
-        val type = this.makeNotNullable()
-        val (number, radix) = extractRadix(value)
-        val parseResult: Any? = try {
-            when {
-                KotlinBuiltIns.isBoolean(type) -> value.toBoolean()
-                KotlinBuiltIns.isChar(type) -> value.singleOrNull()
-                KotlinBuiltIns.isByte(type) -> number.toByteOrNull(radix)
-                KotlinBuiltIns.isShort(type) -> number.toShortOrNull(radix)
-                KotlinBuiltIns.isInt(type) -> number.toIntOrNull(radix)
-                KotlinBuiltIns.isLong(type) -> number.toLongOrNull(radix)
-                KotlinBuiltIns.isFloat(type) -> value.toFloatOrNull()
-                KotlinBuiltIns.isDouble(type) -> value.toDoubleOrNull()
-                KotlinBuiltIns.isString(type) -> {}
-                typeDescriptor is ClassDescriptor && typeDescriptor.kind == ClassKind.ENUM_CLASS -> {
-                    val descriptor = typeDescriptor.unsubstitutedInnerClassesScope.getContributedClassifier(
-                            Name.identifier(value),
-                            NoLookupLocation.FROM_BACKEND
-                    )
-                    if (descriptor is ClassDescriptor && descriptor.kind == ClassKind.ENUM_ENTRY) true else null
-                }
-                else -> null
-            }
-        } catch (e: IllegalArgumentException) {
-            null
-        }
-
-        return parseResult != null
     }
 }

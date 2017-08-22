@@ -25,10 +25,10 @@ import org.jetbrains.kotlin.incremental.components.NoLookupLocation
 import org.jetbrains.kotlin.load.java.descriptors.NullDefaultValue
 import org.jetbrains.kotlin.load.java.descriptors.StringDefaultValue
 import org.jetbrains.kotlin.load.java.descriptors.getDefaultValueFromAnnotation
+import org.jetbrains.kotlin.load.java.lexicalCastFrom
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.resolve.DescriptorUtils
 import org.jetbrains.kotlin.utils.DFS
-import org.jetbrains.kotlin.utils.extractRadix
 import org.jetbrains.org.objectweb.asm.Type
 import org.jetbrains.org.objectweb.asm.commons.InstructionAdapter
 
@@ -108,33 +108,19 @@ fun findJavaDefaultArgumentValue(descriptor: ValueParameterDescriptor, type: Typ
     }
 
     val classDescriptorForParameterType = descriptor.type.constructor.declarationDescriptor
+    val value = (defaultValue as StringDefaultValue).value
+
     if (DescriptorUtils.isEnumClass(classDescriptorForParameterType)) {
-        val value = Name.identifier((defaultValue as StringDefaultValue).value)
+        val name = Name.identifier(value)
 
         val enumDescriptor = (classDescriptorForParameterType as ClassDescriptor)
                 .unsubstitutedInnerClassesScope
-                .getContributedClassifier(value, NoLookupLocation.FROM_BACKEND) as ClassDescriptor
+                .getContributedClassifier(name, NoLookupLocation.FROM_BACKEND) as ClassDescriptor
 
         return enumEntry(enumDescriptor, typeMapper)
     }
 
-    val constant = constantFromString((defaultValue as StringDefaultValue).value, type)
-    return coercion(constant, type)
-}
-
-fun constantFromString(value: String, type: Type): StackValue {
     val unboxedType = unboxPrimitiveTypeOrNull(type) ?: type
-
-    val (number, radix) = extractRadix(value)
-    return when (unboxedType.sort) {
-        Type.BOOLEAN -> constant(java.lang.Boolean.valueOf(value), unboxedType)
-        Type.CHAR -> constant(value[0], unboxedType)
-        Type.BYTE -> constant(java.lang.Byte.valueOf(number, radix), unboxedType)
-        Type.SHORT -> constant(java.lang.Short.valueOf(number, radix), unboxedType)
-        Type.INT -> constant(Integer.valueOf(number, radix), unboxedType)
-        Type.LONG -> constant(java.lang.Long.valueOf(number, radix), unboxedType)
-        Type.FLOAT -> constant(java.lang.Float.valueOf(value), unboxedType)
-        Type.DOUBLE -> constant(java.lang.Double.valueOf(value), unboxedType)
-        else -> constant(value, unboxedType)
-    }
+    val constant = constant(descriptor.type.lexicalCastFrom(value), unboxedType)
+    return coercion(constant, type)
 }
