@@ -91,6 +91,7 @@
         <module>tools/idl2k</module>
         <module>tools/kotlin-annotation-processing</module>
         <module>tools/kotlin-annotation-processing-maven</module>
+        <module>tools/kotlin-uast-language-plugin</module>
         <module>tools/kotlin-maven-allopen</module>
         <module>tools/kotlin-maven-noarg</module>
         <module>tools/kotlin-maven-sam-with-receiver</module>
