@@ -34,7 +34,7 @@
 
     <property name="uast.version" value="1.0.12"/>
 
-    <property name="kotlinx.coroutines.version" value="0.14.1"/>
+    <property name="kotlinx.coroutines.version" value="0.18"/>
 
     <property name="generators" value="${basedir}/generators"/>
 
