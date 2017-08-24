@@ -131,42 +131,41 @@ class TowerResolver {
         val syntheticLevel = SyntheticScopeBasedTowerLevel(implicitScopeTower, implicitScopeTower.syntheticScopes)
 
         private fun ImplicitScopeTower.createNonLocalLevels(): Collection<ScopeTowerLevel> {
-            val mainResult = mutableListOf<ScopeTowerLevel>()
-
-            fun addLevel(scopeTowerLevel: ScopeTowerLevel, mayFitForName: Boolean) {
-                if (mayFitForName) {
-                    mainResult.add(scopeTowerLevel)
-                }
-                else {
-                    skippedDataForLookup.add(TowerData.ForLookupForNoExplicitReceiver(scopeTowerLevel))
-                }
-            }
-
+            val result = mutableListOf<ScopeTowerLevel>()
             lexicalScope.parentsWithSelf.forEach { scope ->
                 if (scope is LexicalScope) {
                     if (!scope.kind.withLocalDescriptors) {
-                        addLevel(
+                        result.addNonLocalLevel(
                                 ScopeBasedTowerLevel(this@createNonLocalLevels, scope),
                                 scope.mayFitForName(name)
                         )
                     }
 
                     getImplicitReceiver(scope)?.let {
-                        addLevel(
+                        result.addNonLocalLevel(
                                 MemberScopeTowerLevel(this@createNonLocalLevels, it),
                                 it.mayFitForName(name)
                         )
                     }
                 }
                 else {
-                    addLevel(
+                    result.addNonLocalLevel(
                             ImportingScopeBasedTowerLevel(this@createNonLocalLevels, scope as ImportingScope),
                             scope.mayFitForName(name)
                     )
                 }
             }
 
-            return mainResult
+            return result
+        }
+
+        private fun MutableList<in ScopeTowerLevel>.addNonLocalLevel(level: ScopeTowerLevel, mayFitForName: Boolean) {
+            if (mayFitForName) {
+                add(level)
+            }
+            else {
+                skippedDataForLookup.add(TowerData.ForLookupForNoExplicitReceiver(level))
+            }
         }
 
         private fun TowerData.process() = processTowerData(processor, resultCollector, useOrder, this)?.also {
