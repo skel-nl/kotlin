@@ -158,6 +158,7 @@ private class NoExplicitReceiverScopeTowerProcessor<C: Candidate>(
             when (data) {
                 is TowerData.TowerLevel -> data.level.recordLookup(name)
                 is TowerData.BothTowerLevelAndImplicitReceiver -> data.level.recordLookup(name)
+                is TowerData.ForLookupForNoExplicitReceiver -> data.level.recordLookup(name)
             }
         }
     }
