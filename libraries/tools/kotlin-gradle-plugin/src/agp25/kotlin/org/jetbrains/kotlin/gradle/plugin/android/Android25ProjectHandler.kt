@@ -2,24 +2,30 @@ package org.jetbrains.kotlin.gradle.plugin
 
 import com.android.build.gradle.*
 import com.android.build.gradle.api.*
+import com.android.build.gradle.tasks.Lint
 import com.android.build.gradle.tasks.MergeResources
 import com.android.builder.model.SourceProvider
 import com.android.ide.common.res2.ResourceSet
 import org.gradle.api.Project
+import org.gradle.api.artifacts.Configuration
 import org.gradle.api.file.FileCollection
 import org.gradle.api.tasks.compile.AbstractCompile
 import org.jetbrains.kotlin.com.intellij.util.ReflectionUtil
 import org.jetbrains.kotlin.gradle.internal.Kapt3GradleSubplugin
-import org.jetbrains.kotlin.gradle.internal.Kapt3KotlinGradleSubplugin
 import org.jetbrains.kotlin.gradle.internal.KaptTask
 import org.jetbrains.kotlin.gradle.internal.KaptVariantData
 import org.jetbrains.kotlin.gradle.plugin.android.AndroidGradleWrapper
+import org.jetbrains.kotlin.gradle.plugin.android.KotlinLintTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.io.File
 
 @Suppress("unused")
 class Android25ProjectHandler(kotlinConfigurationTools: KotlinConfigurationTools)
     : AbstractAndroidProjectHandler<BaseVariant>(kotlinConfigurationTools) {
+
+    internal companion object {
+        val LINT_WITH_KOTLIN_CONFIGURATION_NAME = "lintWithKotlin"
+    }
 
     override fun forEachVariant(project: Project, action: (BaseVariant) -> Unit) {
         val androidExtension = project.extensions.getByName("android")
@@ -37,6 +43,34 @@ class Android25ProjectHandler(kotlinConfigurationTools: KotlinConfigurationTools
             androidExtension.testVariants.all(action)
             androidExtension.unitTestVariants.all(action)
         }
+    }
+
+    override fun handleProject(project: Project) {
+        super.handleProject(project)
+
+        val lintWithKotlinConfiguration = createLintWithKotlinConfiguration(project)
+
+        val androidGlobalLintTask = project.tasks.findByName("lint") as? Lint
+        if (androidGlobalLintTask != null) {
+            val globalLintTask = project.tasks.create("lintWithKotlin", KotlinLintTask::class.java)
+            globalLintTask.javaLintTask = androidGlobalLintTask
+            globalLintTask.dependsOn("assemble", lintWithKotlinConfiguration.buildDependencies)
+
+            androidGlobalLintTask.doLast {
+                project.logger.warn("'${androidGlobalLintTask.name}' did not analyze Kotlin files. " +
+                        "Run '${globalLintTask.name}' instead")
+            }
+        }
+    }
+
+    private fun createLintWithKotlinConfiguration(project: Project): Configuration {
+        val configuration = project.configurations.create(LINT_WITH_KOTLIN_CONFIGURATION_NAME)
+        fun addDependency(dep: String) = configuration.dependencies.add(project.dependencies.create(dep))
+
+        val kotlinPluginVersion = this.loadKotlinVersionFromResource(project.logger)
+        addDependency("org.jetbrains.kotlin:kotlin-compiler:$kotlinPluginVersion")
+
+        return configuration
     }
 
     override fun wireKotlinTasks(project: Project,

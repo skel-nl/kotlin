@@ -653,6 +653,7 @@
         <javac2 destdir="${output}/classes/uast-language-plugin" debug="true" debuglevel="lines,vars,source" includeAntRuntime="false">
             <withKotlin modulename="uast-kotlin">
                 <compilerarg value="-version"/>
+                <compilerarg line="-jvm-target 1.8"/>
             </withKotlin>
             <skip pattern="kotlin/Metadata"/>
             <src>
@@ -660,6 +661,8 @@
             </src>
             <classpath>
                 <pathelement path="${idea.sdk}/core/intellij-core.jar"/>
+                <pathelement path="${idea.sdk}/lib/openapi.jar"/>
+                <pathelement path="${idea.sdk}/lib/idea.jar"/>
                 <pathelement path="${kotlin-home}/lib/kotlin-compiler.jar"/>
             </classpath>
         </javac2>

@@ -213,3 +213,8 @@ messages/**)
 
 # for coroutines
 -keep class kotlinx.coroutines.** { *; }
+
+# for Android Lint
+-keepclassmembers class com.intellij.openapi.roots.LanguageLevelProjectExtension {
+    public static void setLanguageLevel(com.intellij.pom.java.LanguageLevel);
+}

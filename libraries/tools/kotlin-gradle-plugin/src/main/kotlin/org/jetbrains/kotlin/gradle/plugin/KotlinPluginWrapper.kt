@@ -69,7 +69,7 @@ open class Kotlin2JsPluginWrapper @Inject constructor(fileResolver: FileResolver
             Kotlin2JsPlugin(Kotlin2JsTasksProvider(), KotlinSourceSetProviderImpl(fileResolver), kotlinPluginVersion)
 }
 
-private fun Any.loadKotlinVersionFromResource(log: Logger): String {
+fun Any.loadKotlinVersionFromResource(log: Logger): String {
     log.kotlinDebug("Loading version information")
     val props = Properties()
     val propFileName = "project.properties"

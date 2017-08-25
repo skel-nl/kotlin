@@ -476,7 +476,7 @@ abstract class AbstractAndroidProjectHandler<V>(private val kotlinConfigurationT
 
     protected abstract fun wrapVariantDataForKapt(variantData: V): KaptVariantData<V>
 
-    fun handleProject(project: Project) {
+    open fun handleProject(project: Project) {
         val ext = project.extensions.getByName("android") as BaseExtension
         val aptConfigurations = hashMapOf<String, Configuration>()
 
